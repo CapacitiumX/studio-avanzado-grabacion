@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>CAPACITIUMX V347 - ULTIMATE CREATOR STUDIO PRO</title>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation"></script>
+    <style>
+        :root { --neon: #00ff00; --dark: #050505; --red: #ff3333; --blue-pro: #00e5ff; }
+        body { background: var(--dark); color: white; font-family: 'Arial', sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+
+        header { background: #111; padding: 10px 20px; border-bottom: 2px solid var(--neon); display: flex; justify-content: space-between; align-items: center; }
+        .logo { color: var(--neon); font-weight: bold; letter-spacing: 2px; }
+
+        .main { display: flex; flex: 1; overflow: hidden; }
+        .sidebar { width: 390px; background: #000; border-right: 1px solid #333; padding: 12px; display: flex; flex-direction: column; gap: 8px; overflow-y: auto; }
+        .btn-load { background: var(--neon); color: black; padding: 10px; text-align: center; font-weight: bold; cursor: pointer; border-radius: 4px; border: none; font-size: 11px; }
+        .btn-thumb { background: #ff9800; color: black; padding: 8px; font-weight: bold; cursor: pointer; border-radius: 4px; border: none; font-size: 11px; text-align: center; }
+        .btn-pro-app { background: #1c1c1e; color: #fff; border: 1px solid #3a3a3c; padding: 6px; font-size: 10px; font-weight: bold; cursor: pointer; border-radius: 6px; text-align: center; transition: 0.2s; }
+        .btn-pro-app:hover { border-color: var(--blue-pro); background: #2c2c2e; }
+
+        #media-list { flex: 1; min-height: 80px; max-height: 110px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; }
+        .thumb-nav { padding: 6px; background: #222; border: 1px solid #444; font-size: 11px; cursor: pointer; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; }
+        .thumb-nav.active { border-color: var(--neon); background: #111; }
+
+        .section-title { font-size: 10px; color: var(--neon); font-weight: bold; text-transform: uppercase; margin-top: 6px; }
+        .grid-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+        .grid-pro-apps { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; background: #111; padding: 6px; border-radius: 8px; border: 1px solid #222; }
+
+        .monitor-area { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #000; position: relative; }
+        #canvas-render { width: 95%; max-width: 850px; aspect-ratio: 16/9; border: 1px solid #333; background: #000; }
+        
+        .console { position: absolute; top: 15px; right: 15px; display: flex; flex-direction: column; gap: 6px; }
+        .btn-c { background: rgba(0,0,0,0.85); border: 1px solid var(--neon); color: var(--neon); padding: 6px 8px; cursor: pointer; font-size: 10px; font-weight: bold; border-radius: 4px; text-align: left; }
+
+        .footer { height: 110px; background: #111; border-top: 2px solid #333; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; }
+        .btn-rec { background: var(--red); color: white; padding: 12px 25px; font-weight: bold; cursor: pointer; border: none; border-radius: 8px; font-size: 13px; }
+        .btn-pause { background: #ff9800; color: black; padding: 12px 20px; font-weight: bold; cursor: pointer; border: none; border-radius: 8px; font-size: 13px; }
+        
+        .input-text { background: #222; color: white; border: 1px solid var(--neon); padding: 8px; border-radius: 4px; width: 100%; box-sizing: border-box; font-size: 11px; }
+        .ctrl-row { display: flex; align-items: center; gap: 6px; font-size: 10px; color: #ccc; }
+        .ctrl-row input[type="range"] { flex: 1; }
+        .select-custom { background: #222; color: white; border: 1px solid var(--neon); padding: 4px; font-size: 10px; border-radius: 4px; width: 100%; }
+
+        #thumb-modal {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.95); z-index: 10000; display: none;
+            flex-direction: column; align-items: center; justify-content: flex-start; padding: 20px; box-sizing: border-box; overflow-y: auto;
+        }
+        .thumb-grid-10 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; max-width: 1000px; width: 100%; margin-top: 15px; }
+        .thumb-option { border: 2px solid #444; border-radius: 8px; overflow: hidden; cursor: pointer; transition: 0.2s; background: #111; }
+        .thumb-option:hover { border-color: var(--neon); transform: scale(1.02); }
+        .thumb-option canvas { width: 100%; aspect-ratio: 16/9; display: block; }
+        .thumb-label { padding: 6px; font-size: 11px; text-align: center; font-weight: bold; color: var(--neon); background: #222; }
+    </style>
+</head>
+<body>
+
+<div id="thumb-modal">
+    <h2 style="color:var(--neon); margin-bottom: 2px;">🤖 ELIGE TU MINIATURA IA (10 OPCIONES COMPLETAMENTE LIMPIAS)</h2>
+    <p style="font-size: 11px; color: #ccc;">Haz clic en cualquier opción para descargarla en formato PNG:</p>
+    <div class="thumb-grid-10">
+        <div class="thumb-option" onclick="downloadAutoThumb(1)"><canvas id="thumb-c1"></canvas><div class="thumb-label">1. Portada Limpia Original</div></div>
+        <div class="thumb-option" onclick="downloadAutoThumb(2)"><canvas id="thumb-c2"></canvas><div class="thumb-label">2. Estilo MrBeast Pro Outlines</div></div>
+        <div class="thumb-option" onclick="downloadAutoThumb(3)"><canvas id="thumb-c3"></canvas><div class="thumb-label">3. Inclinación + Flecha 3D</div></div>
+        <div class="thumb-option" onclick="downloadAutoThumb(4)"><canvas id="thumb-c4"></canvas><div class="thumb-label">4. Viñeta Cine Oscura</div></div>
+        <div class="thumb-option" onclick="downloadAutoThumb(5)"><canvas id="thumb-c5"></canvas><div class="thumb-label">5. Cyberpunk Neon Grade</div></div>
+        <div class="thumb-option" onclick="downloadAutoThumb(6)"><canvas id="thumb-c6"></canvas><div class="thumb-label">6. Enfoque Radial Zoom</div></div>
+        <div class="thumb-option" onclick="downloadAutoThumb(7)"><canvas id="thumb-c7"></canvas><div class="thumb-label">7. Láser Rage Mode</div></div>
+        <div class="thumb-option" onclick="downloadAutoThumb(8)"><canvas id="thumb-c8"></canvas><div class="thumb-label">8. Matrix Code Digital Overlay</div></div>
+        <div class="thumb-option" onclick="downloadAutoThumb(9)"><canvas id="thumb-c9"></canvas><div class="thumb-label">9. Drama B&N Contrast</div></div>
+        <div class="thumb-option" onclick="downloadAutoThumb(10)"><canvas id="thumb-c10"></canvas><div class="thumb-label">10. Ultra Matte Gold Border</div></div>
+    </div>
+    <button class="btn-load" style="margin-top:20px; width:220px; background:#ff3333; color:white;" onclick="closeThumbModal()">❌ CERRAR VENTANA</button>
+</div>
+
+<header>
+    <div class="logo">CAPACITIUMX V347 - ULTIMATE CREATOR STUDIO</div>
+    <div id="status-mic" style="color:yellow; font-size: 12px;">ESTADO: CARGANDO IA...</div>
+</header>
+
+<div class="main">
+    <aside class="sidebar">
+        <!-- ENTORNO INTEGRADO DE SUITE DE APLICACIONES PRO -->
+        <div class="section-title">🖥️ ENTORNO PRO CREATOR STUDIO APPLICATIONS</div>
+        <div class="grid-pro-apps">
+            <button class="btn-pro-app" onclick="selectProEngine('fcp')">Final Cut</button>
+            <button class="btn-pro-app" onclick="selectProEngine('logic')">Logic Pro</button>
+            <button class="btn-pro-app" onclick="selectProEngine('pixelmator')">Pixelmator</button>
+            <button class="btn-pro-app" onclick="selectProEngine('mainstage')">MainStage</button>
+            <button class="btn-pro-app" onclick="selectProEngine('motion')">Motion</button>
+            <button class="btn-pro-app" onclick="selectProEngine('compressor')">Compressor</button>
+            <button class="btn-pro-app" onclick="selectProEngine('pages')">Pages</button>
+            <button class="btn-pro-app" onclick="selectProEngine('freeform')">Freeform</button>
+            <button class="btn-pro-app" onclick="selectProEngine('numbers')">Numbers</button>
+        </div>
+
+        <div class="section-title">📜 HISTORIAL DE PROYECTOS GUARDADOS</div>
+        <div class="grid-buttons">
+            <button class="btn-load" style="background:#ffea00; color:black;" onclick="saveCurrentProject()">💾 GUARDAR PROYECTO</button>
+            <button class="btn-load" style="background:#00e5ff; color:black;" onclick="loadSelectedProject()">📂 CARGAR PROYECTO</button>
+        </div>
+        <select id="project-history-list" class="select-custom" style="margin-top:4px;">
+            <option value="">-- Proyectos Guardados --</option>
+        </select>
+
+        <button class="btn-load" style="margin-top:8px;" onclick="document.getElementById('file-in').click()">📥 SUBIR FOTOS / VIDEOS</button>
+        <input type="file" id="file-in" multiple accept="image/*,video/*" style="display:none;" onchange="handleFiles(event)">
+        
+        <input type="text" id="slide-text" class="input-text" placeholder="Texto para este slide..." oninput="updateCurrentText()">
+        <div id="media-list"></div>
+
+        <div class="section-title">📐 FORMA CÁMARA</div>
+        <div class="grid-buttons">
+            <button class="btn-c" onclick="setCamShape('rect')">🔲 Rectángulo</button>
+            <button class="btn-c" onclick="setCamShape('circle')">⚪ Círculo Redondo</button>
+        </div>
+
+        <div class="section-title">🖼️ ESTUDIO Y GENERADOR DE MINIATURAS</div>
+        <button class="btn-load" style="background:#00ffff; color:black; font-weight:900;" onclick="generateAutoThumbnails()">✨ GENERAR 10 OPCIONES AUTO (IA)</button>
+        <input type="text" id="thumb-text" class="input-text" style="margin-top:4px;" placeholder="Escribe tu título aquí personalizado...">
+        
+        <div class="ctrl-row">
+            <span>Color Texto:</span>
+            <input type="color" id="thumb-color" value="#ffeb3b" style="background:none; border:none; cursor:pointer; width:30px; height:25px;">
+            <select id="thumb-font" class="select-custom">
+                <option value="Impact">Impact (Youtuber)</option>
+                <option value="Arial Black">Arial Black</option>
+                <option value="Trebuchet MS">Trebuchet MS</option>
+            </select>
+        </div>
+
+        <div class="ctrl-row">
+            <span>Tamaño Letra:</span>
+            <input type="range" id="thumb-size" min="30" max="140" value="80">
+        </div>
+
+        <div class="grid-buttons">
+            <button class="btn-c" onclick="setThumbAlign('left')">⬅️ Izq</button>
+            <button class="btn-c" onclick="setThumbAlign('center')">↔️ Centro</button>
+            <button class="btn-c" onclick="setThumbAlign('right')">➡️ Der</button>
+            <button class="btn-c" onclick="toggleBlurBg()">🌫️ Blur Fondo</button>
+        </div>
+
+        <!-- FLECHA CÓNICA 3D -->
+        <div class="section-title">🏹 FLECHA CURVA CÓNICA 3D</div>
+        <div class="grid-buttons">
+            <button class="btn-c" onclick="toggleArrow(!showArrow)">👁️ Mostrar/Ocultar</button>
+            <button class="btn-c" onclick="toggleArrowFlip()">🪞 Voltear Espejo</button>
+        </div>
+
+        <div class="ctrl-row">
+            <span>Color Flecha:</span>
+            <input type="color" id="arrow-color" value="#00ff00" style="background:none; border:none; cursor:pointer; width:100%; height:25px;">
+        </div>
+
+        <div class="ctrl-row">
+            <span>Posición X:</span>
+            <input type="range" id="arrow-x" min="100" max="1100" value="380">
+        </div>
+        <div class="ctrl-row">
+            <span>Posición Y:</span>
+            <input type="range" id="arrow-y" min="100" max="600" value="380">
+        </div>
+        <div class="ctrl-row">
+            <span>Rotación:</span>
+            <input type="range" id="arrow-rot" min="0" max="360" value="30">
+        </div>
+        <div class="ctrl-row">
+            <span>Ancho / Grosor:</span>
+            <input type="range" id="arrow-thickness" min="20" max="90" value="45">
+        </div>
+        <div class="ctrl-row">
+            <span>Longitud Cola:</span>
+            <input type="range" id="arrow-length" min="100" max="400" value="220">
+        </div>
+
+        <!-- BARRA DE AVATARES -->
+        <div class="section-title">🐾 ELIGE TU AVATAR INTERACTIVO ANIMADO</div>
+        <select id="avatar-selector" class="select-custom" onchange="changeAvatar(this.value)">
+            <option value="none">👤 Rostro Real (Sin Avatar)</option>
+            <option value="cat">🐱 Gato Avatar</option>
+            <option value="dog">🐶 Perro Avatar</option>
+            <option value="crocodile">🐊 Cocodrilo Avatar</option>
+            <option value="bear">🐻 Oso Avatar</option>
+            <option value="koala">🐨 Koala Avatar</option>
+            <option value="rabbit">🐰 Conejo Avatar</option>
+            <option value="lion">🦁 León Avatar</option>
+            <option value="fox">🦊 Zorro Avatar</option>
+            <option value="panda">🐼 Panda Avatar</option>
+            <option value="monkey">🐵 Mono Avatar</option>
+            <option value="shark">🦈 Tiburón Avatar</option>
+        </select>
+
+        <div class="section-title">💥 85 EFECTOS YOUTUBER & VFX PRO</div>
+        <div class="grid-buttons">
+            <button class="btn-c" onclick="setCamFx('none')">🚫 1. Normal</button>
+            <button class="btn-c" onclick="setCamFx('boom')">💥 2. Explosión</button>
+            <button class="btn-c" onclick="setCamFx('alert')">🚨 3. Alerta Rojo</button>
+            <button class="btn-c" onclick="setCamFx('neon')">✨ 4. Neón RGB</button>
+            <button class="btn-c" onclick="setCamFx('zoom')">🔍 5. Zoom Reacción</button>
+            <button class="btn-c" onclick="setCamFx('cinema')">🎬 6. Modo Cine</button>
+            <button class="btn-c" onclick="setCamFx('strobe')">⚡ 7. Rayos Strobe</button>
+            <button class="btn-c" onclick="setCamFx('vhs')">📼 8. VHS Retro</button>
+            <button class="btn-c" onclick="setCamFx('pixel')">🎮 9. Pixel Art</button>
+            <button class="btn-c" onclick="setCamFx('fire')">🔥 10. Fuego Aura</button>
+            <button class="btn-c" onclick="setCamFx('glitch')">🌌 11. Glitch 3D</button>
+            <button class="btn-c" onclick="setCamFx('oldTv')">📺 12. TV Vieja</button>
+            <button class="btn-c" onclick="setCamFx('mirror')">🎭 13. Espejo</button>
+            <button class="btn-c" onclick="setCamFx('vignette')">🖤 14. Viñeta Cómic</button>
+            <button class="btn-c" onclick="setCamFx('spotlight')">🎯 15. Enfoque Spot</button>
+            <button class="btn-c" onclick="setCamFx('rainbow')">🌈 16. Arcoíris</button>
+            <button class="btn-c" onclick="setCamFx('freeze')">❄️ 17. Congelado B&N</button>
+            <button class="btn-c" onclick="setCamFx('fisheye')">👁️ 18. Ojo de Pez</button>
+            <button class="btn-c" onclick="setCamFx('sparkle')">💎 19. Diamante</button>
+            <button class="btn-c" onclick="setCamFx('laser')">🔴 20. Láser Rage</button>
+            <button class="btn-c" onclick="setCamFx('vortex')">🌀 21. Vortex Holo</button>
+            <button class="btn-c" onclick="setCamFx('cyber')">🤖 22. Cyberpunk</button>
+            <button class="btn-c" onclick="setCamFx('anime')">💥 23. Anime Lines</button>
+            <button class="btn-c" onclick="setCamFx('particles')">🎆 24. Partículas</button>
+            <button class="btn-c" onclick="setCamFx('magnify')">🔍 25. Lupa Deform</button>
+            <button class="btn-c" onclick="setCamFx('matrix')">🔲 26. Matrix Code</button>
+            <button class="btn-c" onclick="setCamFx('mirror4')">🪞 27. Espejo 4X</button>
+            <button class="btn-c" onclick="setCamFx('pulseRed')">💓 28. Latido Rojo</button>
+            <button class="btn-c" onclick="setCamFx('snapFlash')">📸 29. Foto Snap</button>
+            <button class="btn-c" onclick="setCamFx('punchIn')">🎯 30. Punch-In Fast</button>
+            <button class="btn-c" onclick="setCamFx('punchOut')">🔍 31. Punch-Out Zoom</button>
+            <button class="btn-c" onclick="setCamFx('textMrBeast')">🔤 32. Texto MrBeast</button>
+            <button class="btn-c" onclick="setCamFx('shakeEffect')">📳 33. Shake Vibración</button>
+            <button class="btn-c" onclick="setCamFx('lowerThird')">🏷️ 34. Lower Third</button>
+            <button class="btn-c" onclick="setCamFx('textPop')">🍿 35. Text Pop-Up</button>
+            <button class="btn-c" onclick="setCamFx('textGlow')">✨ 36. Text Neon Glow</button>
+            <button class="btn-c" onclick="setCamFx('typingText')">⌨️ 37. Typing Effect</button>
+            <button class="btn-c" onclick="setCamFx('kineticText')">🔀 38. Kinetic Typography</button>
+            <button class="btn-c" onclick="setCamFx('filmGrain')">🎞️ 39. Film Grain Retro</button>
+            <button class="btn-c" onclick="setCamFx('fauxShake')">📽️ 40. Faux Cam Shake</button>
+            <button class="btn-c" onclick="setCamFx('callout')">📌 41. Callout Gráfico</button>
+            <button class="btn-c" onclick="setCamFx('whipPan')">🌀 42. Whip Pan Latigo</button>
+            <button class="btn-c" onclick="setCamFx('textGlitch')">👾 43. Glitch de Texto</button>
+            <button class="btn-c" onclick="setCamFx('chromaFlash')">⚡ 44. Chroma Flash</button>
+            <button class="btn-c" onclick="setCamFx('speedRamp')">🏎️ 45. Speed Ramp FX</button>
+            <button class="btn-c" onclick="setCamFx('blurBg')">🌫️ 46. Blur Fondo Cam</button>
+            <button class="btn-c" onclick="setCamFx('colorPop')">🎨 47. Color Grade Pop</button>
+            <button class="btn-c" onclick="setCamFx('splitScreen')">📱 48. Split Screen 2X</button>
+            <button class="btn-c" onclick="setCamFx('motionBlur')">💨 49. Motion Blur FX</button>
+            <button class="btn-c" onclick="setCamFx('outroEnd')">🏁 50. Outro Template</button>
+            <button class="btn-c" onclick="setCamFx('bRoll')">🎞️ 51. B-Roll Overlay</button>
+            <button class="btn-c" onclick="setCamFx('jumpCutFx')">✂️ 52. Jump-Cut Fast</button>
+            <button class="btn-c" onclick="setCamFx('slideIn')">⬅️ 53. Slide In Graphic</button>
+            <button class="btn-c" onclick="setCamFx('jCutOverlay')">🎵 54. J-Cut Audio Visual</button>
+            <button class="btn-c" onclick="setCamFx('lCutOverlay')">🎬 55. L-Cut Audio Visual</button>
+            <button class="btn-c" onclick="setCamFx('greenKeying')">🟩 56. Chroma Key Pro</button>
+            <button class="btn-c" onclick="setCamFx('soundDuck')">🎙️ 57. Ducking Visual</button>
+            <button class="btn-c" onclick="setCamFx('memeFreeze')">🛑 58. Meme Freeze Frame</button>
+            <button class="btn-c" onclick="setCamFx('ultraVignette')">🕶️ 59. Ultra Vignette</button>
+            <button class="btn-c" onclick="setCamFx('parallax2D')">🏞️ 60. Parallax 2.5D</button>
+            <button class="btn-c" onclick="setCamFx('datamosh')">🫠 61. Datamoshing</button>
+            <button class="btn-c" onclick="setCamFx('matchCut')">🎯 62. Match Cut Pro</button>
+            <button class="btn-c" onclick="setCamFx('maskCut')">🚪 63. Corte Máscara</button>
+            <button class="btn-c" onclick="setCamFx('skyReplace')">🌌 64. Sky Replace</button>
+            <button class="btn-c" onclick="setCamFx('dynamicTrackText')">🎯 65. Dynamic Track</button>
+            <button class="btn-c" onclick="setCamFx('lumaKey')">💡 66. Luma Fade Key</button>
+            <button class="btn-c" onclick="setCamFx('textBehind')">👤 67. Text Behind Me</button>
+            <button class="btn-c" onclick="setCamFx('invisibleSplit')">👥 68. Clone Split Screen</button>
+            <button class="btn-c" onclick="setCamFx('forcedBlurRamp')">🏎️ 69. Blur Ramp FX</button>
+            <button class="btn-c" onclick="setCamFx('auraGlow')">✨ 70. Neon Aura Glow</button>
+            <button class="btn-c" onclick="setCamFx('hudOverlay')">🛸 71. HUD Sci-Fi AI</button>
+            <button class="btn-c" onclick="setCamFx('dollyZoom')">🌀 72. Dolly Zoom Vertigo</button>
+            <button class="btn-c" onclick="setCamFx('colorIsolation')">🎨 73. Color Isolation</button>
+            <button class="btn-c" onclick="setCamFx('track3DText')">📐 74. 3D Camera Text</button>
+            <button class="btn-c" onclick="setCamFx('deepfake')">🎭 75. Neural Deepfake</button>
+            <button class="btn-c" onclick="setCamFx('aiOutpaint')">🖼️ 76. AI Outpainting</button>
+            <button class="btn-c" onclick="setCamFx('lidarCloud')">🌐 77. LiDAR 3D Cloud</button>
+            <button class="btn-c" onclick="setCamFx('nerfAI')">🎥 78. Cinematic NeRF</button>
+            <button class="btn-c" onclick="setCamFx('cgiHdri')">🛸 79. CGI HDRI 3D</button>
+            <button class="btn-c" onclick="setCamFx('opticalMorph')">🫠 80. Optical Flow Morph</button>
+            <button class="btn-c" onclick="setCamFx('matteProj')">🧱 81. 3D Matte Proj</button>
+            <button class="btn-c" onclick="setCamFx('screenOcclude')">📱 82. Screen Replace Occl</button>
+            <button class="btn-c" onclick="setCamFx('hairRefine')">✂️ 83. Auto Roto Hair</button>
+            <button class="btn-c" onclick="setCamFx('unrealSet')">🎬 84. Unreal Engine Set</button>
+            <button class="btn-c" onclick="setCamFx('none')">🚫 85. Reset Efectos</button>
+        </div>
+
+        <div class="section-title">🎬 20 TRANSICIONES DE FOTO / SLIDE</div>
+        <div class="grid-buttons">
+            <button class="btn-c" onclick="setAnimMode('zoom')">🔍 1. Zoom</button>
+            <button class="btn-c" onclick="setAnimMode('slide')">↔️ 2. Cortina</button>
+            <button class="btn-c" onclick="setAnimMode('blinds')">🪟 3. Persiana Horiz.</button>
+            <button class="btn-c" onclick="setAnimMode('flip')">🔄 4. Giro 3D</button>
+            <button class="btn-c" onclick="setAnimMode('fade')">✨ 5. Desvanecer</button>
+            <button class="btn-c" onclick="setAnimMode('pop')">💥 6. Explosión</button>
+            <button class="btn-c" onclick="setAnimMode('drop')">⬇️ 7. Caída</button>
+            <button class="btn-c" onclick="setAnimMode('wipe')">↕️ 8. Barrido Arriba</button>
+            <button class="btn-c" onclick="setAnimMode('spinZoom')">🌀 9. Spin Zoom</button>
+            <button class="btn-c" onclick="setAnimMode('bounce')">⚽ 10. Rebote</button>
+            <button class="btn-c" onclick="setAnimMode('scale')">📐 11. Escalado</button>
+            <button class="btn-c" onclick="setAnimMode('windmill')">🎡 12. Molino</button>
+            <button class="btn-c" onclick="setAnimMode('diagonal')">↗️ 13. Diagonal</button>
+            <button class="btn-c" onclick="setAnimMode('flash')">⚡ 14. Flash</button>
+            <button class="btn-c" onclick="setAnimMode('vBlinds')">🏛️ 15. Persiana Vert.</button>
+            <button class="btn-c" onclick="setAnimMode('reveal')">👁️ 16. Revelar</button>
+            <button class="btn-c" onclick="setAnimMode('rise')">⬆️ 17. Elevar</button>
+            <button class="btn-c" onclick="setAnimMode('swing')">🔔 18. Balanceo</button>
+            <button class="btn-c" onclick="setAnimMode('dBlinds')">📐 19. Persiana Diag.</button>
+            <button class="btn-c" onclick="setAnimMode('none')">⏹️ 20. Estático</button>
+        </div>
+
+        <div class="section-title">🖼️ Fondo Virtual CÁMARA (Corte Solido)</div>
+        <div class="grid-buttons">
+            <button class="btn-c" onclick="setBgMode('yellow')">🟨 Amarillo</button>
+            <button class="btn-c" onclick="setBgMode('blue')">🟦 Azul Sólido</button>
+            <button class="btn-c" onclick="setBgMode('orange')">🟧 Naranja</button>
+            <button class="btn-c" onclick="setBgMode('green')">🟩 Verde Chroma</button>
+            <button class="btn-c" onclick="setBgMode('red')">🟥 Rojo Sólido</button>
+            <button class="btn-c" onclick="setBgMode('purple')">🟪 Púrpura</button>
+            <button class="btn-c" onclick="setBgMode('dark')">⬛ Gris Estudio</button>
+            <button class="btn-c" onclick="setBgMode('white')">⬜ Blanco</button>
+            <button class="btn-c" onclick="setBgMode('office')">🏢 Oficina</button>
+            <button class="btn-c" onclick="setBgMode('none')">🚫 Real / Sin IA</button>
+        </div>
+        <button class="btn-load" style="margin-top:4px;" onclick="document.getElementById('custom-bg-in').click()">🖼️ SUBIR FOTO PROPIA DE FONDO</button>
+        <input type="file" id="custom-bg-in" accept="image/*" style="display:none;" onchange="handleCustomBg(event)">
+    </aside>
+
+    <main class="monitor-area">
+        <canvas id="canvas-render" width="1280" height="720"></canvas>
+    </main>
+</div>
+
+<div class="footer">
+    <div style="display:flex; gap:15px; align-items: center;">
+        <button id="recBtn" class="btn-rec" onclick="startCapture()">🎙️ EMPEZAR GRABACIÓN</button>
+        <button id="pauseBtn" class="btn-pause" onclick="togglePause()">⏸ PAUSAR (CORTAR)</button>
+        <button class="btn-next" onclick="nextSlide()">SIGUIENTE FOTO ➡️</button>
+        <button id="dlBtn" style="display:none; background:var(--neon); color:black; font-weight:bold; cursor:pointer; border:none; border-radius:8px;" onclick="download()">📥 GUARDAR VIDEO FINAL</button>
+    </div>
+    <div style="color:#666; font-size:10px;">TIP: PRESIONA LA TECLA 'ESPACIO' PARA PAUSAR/REANUDAR SI TE TRABAS AL HABLAR.</div>
+</div>
+
+<video id="v-cam" autoplay playsinline style="display:none"></video>
+<video id="v-bg" loop style="display:none" crossOrigin="anonymous"></video>
+<canvas id="canvas-cam-processed" width="1280" height="720" style="display:none"></canvas>
+
+<script>
+    const canvas = document.getElementById('canvas-render');
+    const ctx = canvas.getContext('2d');
+    const vCam = document.getElementById('v-cam');
+    const vBg = document.getElementById('v-bg');
+    const slideTextInput = document.getElementById('slide-text');
+    
+    const procCanvas = document.getElementById('canvas-cam-processed');
+    const procCtx = procCanvas.getContext('2d');
+
+    let library = [], curIdx = -1, camMode = 'mini', camX = 930, camY = 50, camW = 300, camH = 225, dragging = false;
+    let imgFilter = 'none', camFx = 'none';
+    let bgMode = 'purple'; 
+    let customBgImg = null;
+    let transitionTimer = 0, camFxTimer = 0;
+    let recorder, chunks = [], isRecording = false, isPaused = false, audioCtx, finalBlob;
+    let selfieSegmentation = null;
+    let latestMask = null;
+    let selectedAvatar = 'none';
+
+    let camShape = 'rect';
+    let showArrow = false;
+    let arrowFlip = false;
+    let thumbAlign = 'center';
+    let isBlurBg = false;
+
+    function setCamShape(shape) { camShape = shape; }
+    function setThumbAlign(align) { thumbAlign = align; }
+    function toggleBlurBg() { isBlurBg = !isBlurBg; }
+    function toggleArrow(val) { showArrow = val; }
+    function toggleArrowFlip() { arrowFlip = !arrowFlip; }
+
+    // --- ACCIÓN DE LA ENTRADA DE MOTOR DE APLICACIONES PRO ---
+    function selectProEngine(app) {
+        console.log("Suite Engine Activado para:", app);
+        switch(app) {
+            case 'fcp': setCamFx('cinema'); bgMode = 'dark'; break;
+            case 'logic': setCamFx('soundDuck'); break;
+            case 'pixelmator': imgFilter = 'contrast(1.3) brightness(1.1)'; break;
+            case 'mainstage': setCamFx('strobe'); break;
+            case 'motion': setCamFx('kineticText'); break;
+            case 'compressor': setCamFx('speedRamp'); break;
+            case 'pages': document.getElementById('thumb-text').value = "Pages Pro Document"; break;
+            case 'freeform': showArrow = true; document.getElementById('arrow-color').value = "#00ffff"; break;
+            case 'numbers': bgMode = 'green'; break;
+        }
+    }
+
+    function saveCurrentProject() {
+        const name = prompt("Nombre del proyecto:", "Proyecto " + new Date().toLocaleTimeString());
+        if (!name) return;
+
+        const projData = {
+            name: name,
+            date: new Date().toLocaleString(),
+            thumbText: document.getElementById('thumb-text').value,
+            thumbColor: document.getElementById('thumb-color').value,
+            thumbFont: document.getElementById('thumb-font').value,
+            thumbSize: document.getElementById('thumb-size').value,
+            arrowX: document.getElementById('arrow-x').value,
+            arrowY: document.getElementById('arrow-y').value,
+            arrowRot: document.getElementById('arrow-rot').value,
+            arrowColor: document.getElementById('arrow-color').value,
+            showArrow: showArrow,
+            camFx: camFx,
+            bgMode: bgMode
+        };
+
+        let saved = JSON.parse(localStorage.getItem('capX_projects') || "[]");
+        saved.push(projData);
+        localStorage.setItem('capX_projects', JSON.stringify(saved));
+        updateProjectHistoryDropdown();
+        alert("✅ Proyecto guardado con éxito.");
+    }
+
+    function updateProjectHistoryDropdown() {
+        const list = document.getElementById('project-history-list');
+        list.innerHTML = `<option value="">-- Proyectos Guardados --</option>`;
+        let saved = JSON.parse(localStorage.getItem('capX_projects') || "[]");
+        saved.forEach((p, idx) => {
+            let opt = document.createElement('option');
+            opt.value = idx;
+            opt.innerText = `${p.name} (${p.date})`;
+            list.appendChild(opt);
+        });
+    }
+
+    function loadSelectedProject() {
+        const idx = document.getElementById('project-history-list').value;
+        if (idx === "") return;
+        let saved = JSON.parse(localStorage.getItem('capX_projects') || "[]");
+        let p = saved[idx];
+        if (!p) return;
+
+        document.getElementById('thumb-text').value = p.thumbText || "";
+        document.getElementById('thumb-color').value = p.thumbColor || "#ffeb3b";
+        document.getElementById('thumb-font').value = p.thumbFont || "Impact";
+        document.getElementById('thumb-size').value = p.thumbSize || "80";
+        document.getElementById('arrow-x').value = p.arrowX || "380";
+        document.getElementById('arrow-y').value = p.arrowY || "380";
+        document.getElementById('arrow-rot').value = p.arrowRot || "30";
+        document.getElementById('arrow-color').value = p.arrowColor || "#00ff00";
+        showArrow = p.showArrow;
+        camFx = p.camFx || "none";
+        bgMode = p.bgMode || "purple";
+
+        alert(`📂 Proyecto "${p.name}" cargado correctamente.`);
+    }
+
+    function generateAutoThumbnails() {
+        document.getElementById('thumb-modal').style.display = 'flex';
+        let txt = document.getElementById('thumb-text').value.trim();
+
+        for (let i = 1; i <= 10; i++) {
+            const c = document.getElementById(`thumb-c${i}`);
+            c.width = 1280; c.height = 720;
+            const tCtx = c.getContext('2d');
+            tCtx.drawImage(canvas, 0, 0, 1280, 720);
+
+            if (i === 1) {
+            } else if (i === 2) {
+                tCtx.strokeStyle = "var(--neon)"; tCtx.lineWidth = 20; tCtx.strokeRect(0,0,1280,720);
+                if (txt) {
+                    tCtx.fillStyle = "#ffeb3b"; tCtx.font = "900 85px Impact"; tCtx.textAlign = "center";
+                    tCtx.strokeStyle = "black"; tCtx.lineWidth = 14;
+                    tCtx.strokeText(txt.toUpperCase(), 640, 640); tCtx.fillText(txt.toUpperCase(), 640, 640);
+                }
+            } else if (i === 3) {
+                drawCustom3DArrow(tCtx, 380, 380, 30 * (Math.PI/180), "#ff0055", 50, 220, false);
+                if (txt) {
+                    tCtx.fillStyle = "#ffffff"; tCtx.font = "900 80px Impact"; tCtx.textAlign = "left";
+                    tCtx.strokeStyle = "black"; tCtx.lineWidth = 12;
+                    tCtx.strokeText(txt.toUpperCase(), 80, 640); tCtx.fillText(txt.toUpperCase(), 80, 640);
+                }
+            } else if (i === 4) {
+                let grad = tCtx.createRadialGradient(640,360,100, 640,360,700);
+                grad.addColorStop(0, 'rgba(0,0,0,0)'); grad.addColorStop(1, 'rgba(0,0,0,0.85)');
+                tCtx.fillStyle = grad; tCtx.fillRect(0,0,1280,720);
+            } else if (i === 5) {
+                tCtx.shadowColor = "#00ffff"; tCtx.shadowBlur = 30;
+                tCtx.strokeStyle = "#00ffff"; tCtx.lineWidth = 10; tCtx.strokeRect(20,20,1240,680);
+            } else if (i === 6) {
+                tCtx.strokeStyle = "rgba(255,255,255,0.3)"; tCtx.lineWidth = 3;
+                tCtx.beginPath(); tCtx.arc(640, 360, 200, 0, Math.PI*2); tCtx.stroke();
+            } else if (i === 7) {
+                tCtx.strokeStyle = 'red'; tCtx.lineWidth = 8; tCtx.shadowColor = 'red'; tCtx.shadowBlur = 15;
+                tCtx.beginPath(); tCtx.moveTo(400, 300); tCtx.lineTo(100, 100); tCtx.moveTo(700, 300); tCtx.lineTo(1100, 100); tCtx.stroke();
+            } else if (i === 8) {
+                tCtx.fillStyle = 'rgba(0, 255, 0, 0.2)'; tCtx.fillRect(0, 0, 1280, 720);
+            } else if (i === 9) {
+                let imgData = tCtx.getImageData(0,0,1280,720);
+                let d = imgData.data;
+                for(let k=0; k<d.length; k+=4) {
+                    let avg = (d[k]+d[k+1]+d[k+2])/3;
+                    d[k]=avg; d[k+1]=avg; d[k+2]=avg;
+                }
+                tCtx.putImageData(imgData,0,0);
+            } else if (i === 10) {
+                tCtx.strokeStyle = "yellow"; tCtx.lineWidth = 8; tCtx.strokeRect(40,40,1200,640);
+            }
+        }
+    }
+
+    function downloadAutoThumb(idx) {
+        const c = document.getElementById(`thumb-c${idx}`);
+        const a = document.createElement('a');
+        a.href = c.toDataURL('image/png');
+        a.download = `CAPACITIUMX_THUMBNAIL_OPTION_${idx}.png`;
+        a.click();
+    }
+
+    function closeThumbModal() { document.getElementById('thumb-modal').style.display = 'none'; }
+
+    function drawCustom3DArrow(context, x, y, rot, color, thickness, length, isFlipped) {
+        context.save();
+        context.translate(x, y);
+        context.rotate(rot);
+        if (isFlipped) context.scale(-1, 1);
+
+        context.shadowColor = "rgba(0, 0, 0, 0.6)";
+        context.shadowBlur = 18;
+        context.shadowOffsetX = 8;
+        context.shadowOffsetY = 8;
+
+        context.beginPath();
+        context.moveTo(-length, -5);
+        context.quadraticCurveTo(-length * 0.4, -thickness * 0.8, 0, -thickness * 0.5);
+        context.lineTo(0, -thickness * 1.1);
+        context.lineTo(length * 0.45, 0);
+        context.lineTo(0, thickness * 1.1);
+        context.lineTo(0, thickness * 0.5);
+        context.quadraticCurveTo(-length * 0.4, thickness * 0.2, -length, 5);
+        context.closePath();
+
+        let grad = context.createLinearGradient(-length, -thickness, length * 0.5, thickness);
+        grad.addColorStop(0, color);
+        grad.addColorStop(0.5, '#ffffff');
+        grad.addColorStop(1, color);
+        
+        context.fillStyle = grad;
+        context.fill();
+
+        context.strokeStyle = "rgba(0, 0, 0, 0.4)";
+        context.lineWidth = 3;
+        context.stroke();
+
+        context.restore();
+    }
+
+    function drawThumbnailElements(context, w, h) {
+        let textVal = document.getElementById('thumb-text').value.trim();
+        let textColor = document.getElementById('thumb-color').value;
+        let textFont = document.getElementById('thumb-font').value;
+        let textSize = document.getElementById('thumb-size').value;
+
+        if (textVal) {
+            context.save();
+            context.fillStyle = textColor;
+            context.font = `900 ${textSize}px ${textFont}`;
+            context.textAlign = thumbAlign;
+            context.strokeStyle = "black";
+            context.lineWidth = 12;
+
+            let alignX = w / 2;
+            if (thumbAlign === 'left') alignX = 80;
+            if (thumbAlign === 'right') alignX = w - 80;
+
+            context.strokeText(textVal.toUpperCase(), alignX, h - 80);
+            context.fillText(textVal.toUpperCase(), alignX, h - 80);
+            context.restore();
+        }
+
+        if (showArrow) {
+            let arrowX = parseInt(document.getElementById('arrow-x').value);
+            let arrowY = parseInt(document.getElementById('arrow-y').value);
+            let arrowRot = parseInt(document.getElementById('arrow-rot').value) * (Math.PI / 180);
+            let arrowColor = document.getElementById('arrow-color').value;
+            let arrowThickness = parseInt(document.getElementById('arrow-thickness').value);
+            let arrowLength = parseInt(document.getElementById('arrow-length').value);
+
+            drawCustom3DArrow(context, arrowX, arrowY, arrowRot, arrowColor, arrowThickness, arrowLength, arrowFlip);
+        }
+    }
+
+    function initAI() {
+        selfieSegmentation = new SelfieSegmentation({
+            locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/${file}`
+        });
+        
+        selfieSegmentation.setOptions({ modelSelection: 1 });
+        selfieSegmentation.onResults(onResultsAI);
+
+        navigator.mediaDevices.getUserMedia({ video: { width: 1280, height: 720 } }).then(stream => {
+            vCam.srcObject = stream;
+            document.getElementById('status-mic').innerText = "ESTADO: IA LISTA";
+            processAIFrames();
+            updateProjectHistoryDropdown();
+        });
+    }
+
+    async function processAIFrames() {
+        if (vCam.readyState >= 2) {
+            await selfieSegmentation.send({ image: vCam });
+        }
+        requestAnimationFrame(processAIFrames);
+    }
+
+    // ARQUITECTURA DE RECORTE COMPUESTO BINARIO ROBUSTO MEJORADO (0 MANCHAS)
+    function onResultsAI(results) {
+        latestMask = results.segmentationMask;
+
+        procCtx.save();
+        procCtx.clearRect(0, 0, procCanvas.width, procCanvas.height);
+
+        if (selectedAvatar !== 'none') {
+            drawAnimatedAvatar(procCtx);
+        } else if (bgMode === 'none') {
+            procCtx.drawImage(vCam, 0, 0, procCanvas.width, procCanvas.height);
+        } else {
+            drawVirtualBackgroundToCtx(procCtx, 0, 0, procCanvas.width, procCanvas.height);
+
+            const maskBuffer = document.createElement('canvas');
+            maskBuffer.width = procCanvas.width; maskBuffer.height = procCanvas.height;
+            const mCtx = maskBuffer.getContext('2d');
+            
+            mCtx.clearRect(0, 0, maskBuffer.width, maskBuffer.height);
+            mCtx.drawImage(latestMask, 0, 0, procCanvas.width, procCanvas.height);
+
+            const maskData = mCtx.getImageData(0, 0, procCanvas.width, procCanvas.height);
+            const pixels = maskData.data;
+
+            for (let i = 0; i < pixels.length; i += 4) {
+                let val = pixels[i];
+                if (val > 100) { 
+                    pixels[i] = 255; pixels[i+1] = 255; pixels[i+2] = 255;
+                    pixels[i+3] = 255; 
+                } else {
+                    pixels[i+3] = 0;   
+                }
+            }
+            mCtx.putImageData(maskData, 0, 0);
+
+            const personCanvas = document.createElement('canvas');
+            personCanvas.width = procCanvas.width; personCanvas.height = procCanvas.height;
+            const pCtx = personCanvas.getContext('2d');
+            
+            pCtx.clearRect(0, 0, personCanvas.width, personCanvas.height);
+            pCtx.drawImage(vCam, 0, 0, personCanvas.width, personCanvas.height);
+
+            pCtx.globalCompositeOperation = 'destination-in';
+            pCtx.drawImage(maskBuffer, 0, 0, personCanvas.width, personCanvas.height);
+
+            procCtx.drawImage(personCanvas, 0, 0, procCanvas.width, procCanvas.height);
+        }
+        procCtx.restore();
+    }
+
+    function changeAvatar(val) { selectedAvatar = val; }
+
+    function drawAnimatedAvatar(context) {
+        drawVirtualBackgroundToCtx(context, 0, 0, procCanvas.width, procCanvas.height);
+        const cx = procCanvas.width / 2;
+        const cy = procCanvas.height / 2;
+        const r = 180;
+
+        context.save();
+        
+        let baseColor = '#ffa500';
+        let detailColor = '#ff9900';
+        let isCat = false, isDog = false, isCrocodile = false, isBear = false, isKoala = false, isRabbit = false, isLion = false, isFox = false, isPanda = false, isMonkey = false, isShark = false;
+
+        switch(selectedAvatar) {
+            case 'cat': baseColor = '#ffa500'; detailColor = '#ff9900'; isCat = true; break;
+            case 'dog': baseColor = '#c28544'; detailColor = '#804a19'; isDog = true; break;
+            case 'crocodile': baseColor = '#4caf50'; detailColor = '#388e3c'; isCrocodile = true; break;
+            case 'bear': baseColor = '#8d6e63'; detailColor = '#5d4037'; isBear = true; break;
+            case 'koala': baseColor = '#b0bec5'; detailColor = '#78909c'; isKoala = true; break;
+            case 'rabbit': baseColor = '#ffffff'; detailColor = '#ffb6c1'; isRabbit = true; break;
+            case 'lion': baseColor = '#ffb74d'; detailColor = '#e65100'; isLion = true; break;
+            case 'fox': baseColor = '#ff5722'; detailColor = '#e64a19'; isFox = true; break;
+            case 'panda': baseColor = '#ffffff'; detailColor = '#212121'; isPanda = true; break;
+            case 'monkey': baseColor = '#a1887f'; detailColor = '#4e342e'; isMonkey = true; break;
+            case 'shark': baseColor = '#90caf9'; detailColor = '#1565c0'; isShark = true; break;
+        }
+
+        context.fillStyle = detailColor;
+        if (isCat || isLion || isFox) {
+            context.beginPath(); context.moveTo(cx - r*0.8, cy - r*0.3); context.lineTo(cx - r*0.5, cy - r*1.3); context.lineTo(cx - r*0.1, cy - r*0.7); context.fill();
+            context.beginPath(); context.moveTo(cx + r*0.8, cy - r*0.3); context.lineTo(cx + r*0.5, cy - r*1.3); context.lineTo(cx + r*0.1, cy - r*0.7); context.fill();
+        } else if (isDog || isKoala || isBear || isPanda || isMonkey) {
+            context.beginPath(); context.arc(cx - r*0.7, cy - r*0.7, r*0.35, 0, Math.PI*2); context.fill();
+            context.beginPath(); context.arc(cx + r*0.7, cy - r*0.7, r*0.35, 0, Math.PI*2); context.fill();
+        } else if (isRabbit) {
+            context.beginPath(); context.ellipse(cx - r*0.4, cy - r*1.2, r*0.2, r*0.6, -0.1, 0, Math.PI*2); context.fill();
+            context.beginPath(); context.ellipse(cx + r*0.4, cy - r*1.2, r*0.2, r*0.6, 0.1, 0, Math.PI*2); context.fill();
+        } else if (isShark) {
+            context.beginPath(); context.moveTo(cx, cy - r*0.5); context.lineTo(cx - r*0.3, cy - r*1.5); context.lineTo(cx + r*0.3, cy - r*0.5); context.fill();
+        }
+
+        if (isLion) {
+            context.fillStyle = '#e65100';
+            for (let a = 0; a < Math.PI * 2; a += 0.4) {
+                context.beginPath(); context.arc(cx + Math.cos(a)*r*1.1, cy + Math.sin(a)*r*1.1, r*0.35, 0, Math.PI*2); context.fill();
+            }
+        }
+
+        context.fillStyle = baseColor;
+        context.beginPath();
+        if (isCrocodile) {
+            context.ellipse(cx, cy, r*1.3, r*0.8, 0, 0, Math.PI*2);
+        } else {
+            context.arc(cx, cy, r, 0, Math.PI * 2);
+        }
+        context.fill();
+
+        if (isPanda) {
+            context.fillStyle = '#212121';
+            context.beginPath(); context.ellipse(cx - r*0.4, cy - r*0.1, r*0.25, r*0.35, -0.2, 0, Math.PI*2); context.fill();
+            context.beginPath(); context.ellipse(cx + r*0.4, cy - r*0.1, r*0.25, r*0.35, 0.2, 0, Math.PI*2); context.fill();
+        }
+
+        context.fillStyle = '#ffffff';
+        context.beginPath();
+        context.arc(cx - r*0.4, cy - r*0.2, r*0.2, 0, Math.PI * 2);
+        context.arc(cx + r*0.4, cy - r*0.2, r*0.2, 0, Math.PI * 2);
+        context.fill();
+
+        context.fillStyle = '#000000';
+        context.beginPath();
+        context.arc(cx - r*0.4, cy - r*0.2, r*0.09, 0, Math.PI * 2);
+        context.arc(cx + r*0.4, cy - r*0.2, r*0.09, 0, Math.PI * 2);
+        context.fill();
+
+        if (isBear || isKoala || isDog || isFox || isMonkey) {
+            context.fillStyle = isKoala ? '#37474f' : 'rgba(0,0,0,0.15)';
+            context.beginPath(); context.arc(cx, cy + r*0.15, r*0.3, 0, Math.PI*2); context.fill();
+            context.fillStyle = '#000000';
+            context.beginPath(); context.ellipse(cx, cy + r*0.05, r*0.12, r*0.08, 0, 0, Math.PI*2); context.fill();
+        }
+
+        let talkH = Math.abs(Math.sin(camFxTimer * 8)) * 32 + 8;
+        context.fillStyle = '#ff3366';
+        context.beginPath();
+        if (isCrocodile) {
+            context.ellipse(cx + r*0.3, cy + r*0.1, r*0.4, talkH, 0, 0, Math.PI * 2);
+        } else {
+            context.ellipse(cx, cy + r*0.4, r*0.22, talkH, 0, 0, Math.PI * 2);
+        }
+        context.fill();
+        context.strokeStyle = '#000000'; context.lineWidth = 4; context.stroke();
+
+        if (isCrocodile || isShark) {
+            context.fillStyle = '#ffffff';
+            context.beginPath();
+            context.moveTo(cx - 30, cy + r*0.35); context.lineTo(cx - 15, cy + r*0.35 + 15); context.lineTo(cx, cy + r*0.35);
+            context.moveTo(cx, cy + r*0.35); context.lineTo(cx + 15, cy + r*0.35 + 15); context.lineTo(cx + 30, cy + r*0.35);
+            context.fill();
+        }
+
+        context.restore();
+    }
+
+    function setCamFx(fx) { camFx = fx; camFxTimer = 0; }
+
+    function drawVirtualBackgroundToCtx(context, x, y, w, h) {
+        context.save();
+        switch(bgMode) {
+            case 'yellow': context.fillStyle = '#ffcc00'; context.fillRect(x, y, w, h); break;
+            case 'blue': context.fillStyle = '#0044ff'; context.fillRect(x, y, w, h); break;
+            case 'orange': context.fillStyle = '#ff6600'; context.fillRect(x, y, w, h); break;
+            case 'green': context.fillStyle = '#00b140'; context.fillRect(x, y, w, h); break;
+            case 'red': context.fillStyle = '#cc0000'; context.fillRect(x, y, w, h); break;
+            case 'purple': context.fillStyle = '#8800cc'; context.fillRect(x, y, w, h); break;
+            case 'dark': context.fillStyle = '#222222'; context.fillRect(x, y, w, h); break;
+            case 'white': context.fillStyle = '#ffffff'; context.fillRect(x, y, w, h); break;
+            case 'office':
+                let grad = context.createLinearGradient(x, y, x, y + h);
+                grad.addColorStop(0, '#2c3e50'); grad.addColorStop(0.7, '#34495e'); grad.addColorStop(1, '#111111');
+                context.fillStyle = grad; context.fillRect(x, y, w, h);
+                context.fillStyle = '#4a3b32'; context.fillRect(x, y + h - (h*0.22), w, h*0.22);
+                break;
+            case 'custom':
+                if (customBgImg) context.drawImage(customBgImg, x, y, w, h);
+                else { context.fillStyle = '#8800cc'; context.fillRect(x, y, w, h); }
+                break;
+            default:
+                context.fillStyle = '#000000'; context.fillRect(x, y, w, h);
+        }
+        context.restore();
+    }
+
+    function handleFiles(e) {
+        Array.from(e.target.files).forEach(file => {
+            const url = URL.createObjectURL(file);
+            const isVid = file.type.includes('video');
+            const item = { type: isVid ? 'vid' : 'img', url, el: null, text: "", anim: 'zoom' };
+            if (!isVid) { const img = new Image(); img.src = url; item.el = img; }
+            library.push(item);
+            updateList();
+            if(curIdx === -1) selectMedia(0);
+        });
+    }
+
+    function handleCustomBg(e) {
+        if(e.target.files[0]) {
+            const img = new Image();
+            img.src = URL.createObjectURL(e.target.files[0]);
+            img.onload = () => { customBgImg = img; bgMode = 'custom'; };
+        }
+    }
+
+    function setBgMode(mode) { bgMode = mode; }
+
+    function setAnimMode(anim) {
+        if (curIdx !== -1) {
+            library[curIdx].anim = anim;
+            transitionTimer = 0;
+            updateList();
+        }
+    }
+
+    UXList = function() {
+        const list = document.getElementById('media-list');
+        list.innerHTML = "";
+        library.forEach((m, i) => {
+            const d = document.createElement('div');
+            d.className = `thumb-nav ${i === curIdx ? 'active' : ''}`;
+            d.onclick = () => selectMedia(i);
+            
+            const label = document.createElement('span');
+            label.innerText = `${i+1}. ${m.type === 'vid' ? '🎥' : '🖼️'} ${m.text.substring(0,10)}...`;
+            
+            const fxTag = document.createElement('span');
+            fxTag.className = 'fx-tag';
+            fxTag.innerText = m.type === 'img' ? `⭐ ${m.anim}` : '';
+
+            d.appendChild(label);
+            d.appendChild(fxTag);
+            list.appendChild(d);
+        });
+    }
+    function updateList() { UXList(); }
+
+    function selectMedia(i) {
+        curIdx = i;
+        transitionTimer = 0;
+        slideTextInput.value = library[i].text || "";
+        if (library[i].type === 'vid') { vBg.src = library[i].url; vBg.play(); }
+        updateList();
+    }
+
+    function nextSlide() {
+        if (library.length > 0) {
+            let nextIdx = (curIdx + 1) % library.length;
+            selectMedia(nextIdx);
+        }
+    }
+
+    function updateCurrentText() { if(curIdx !== -1) library[curIdx].text = slideTextInput.value; }
+    function togglePlay() { if (vBg.paused) vBg.play(); else vBg.pause(); }
+
+    function drawImageContain(img, targetW, targetH) {
+        const imgRatio = img.width / img.height;
+        const targetRatio = targetW / targetH;
+        let drawW, drawH, drawX, drawY;
+
+        if (imgRatio > targetRatio) {
+            drawW = targetW; drawH = targetW / imgRatio;
+            drawX = 0; drawY = (targetH - drawH) / 2;
+        } else {
+            drawH = targetH; drawW = targetH * imgRatio;
+            drawX = (targetW - drawW) / 2; drawY = 0;
+        }
+        ctx.drawImage(img, drawX, drawY, drawW, drawH);
+    }
+
+    function renderImageWithAnimation(img, animMode) {
+        transitionTimer += 0.025;
+        let t = Math.min(transitionTimer, 1);
+        const cw = canvas.width, ch = canvas.height;
+
+        ctx.save();
+        if (isBlurBg) ctx.filter = 'blur(6px)';
+
+        switch(animMode) {
+            case 'zoom':
+                let sz = 1 + (Math.sin(transitionTimer * 0.5) * 0.08);
+                ctx.translate(cw / 2, ch / 2); ctx.scale(sz, sz); ctx.translate(-cw / 2, -ch / 2);
+                drawImageContain(img, cw, ch);
+                break;
+            case 'slide':
+                let px = (1 - Math.pow(1 - t, 3)) * cw - cw;
+                ctx.translate(px, 0); drawImageContain(img, cw, ch);
+                break;
+            case 'blinds':
+                let strips = 8, stripW = cw / strips, pW = stripW * t;
+                for (let i = 0; i < strips; i++) {
+                    ctx.save(); ctx.beginPath(); ctx.rect(i * stripW, 0, pW, ch); ctx.clip();
+                    drawImageContain(img, cw, ch); ctx.restore();
+                }
+                break;
+            case 'flip':
+                ctx.translate(cw / 2, ch / 2); ctx.scale(Math.cos((1 - t) * Math.PI), 1); ctx.translate(-cw / 2, -ch / 2);
+                drawImageContain(img, cw, ch);
+                break;
+            case 'fade':
+                ctx.globalAlpha = t; drawImageContain(img, cw, ch);
+                break;
+            case 'pop':
+                let pScale = t < 0.8 ? t * 1.15 : 1;
+                ctx.translate(cw / 2, ch / 2); ctx.scale(pScale, pScale); ctx.translate(-cw / 2, -ch / 2);
+                drawImageContain(img, cw, ch);
+                break;
+            case 'drop':
+                let py = (1 - Math.pow(1 - t, 2)) * ch - ch;
+                ctx.translate(0, py); drawImageContain(img, cw, ch);
+                break;
+            case 'wipe':
+                ctx.save(); ctx.beginPath(); ctx.rect(0, 0, cw, ch * t); ctx.clip();
+                drawImageContain(img, cw, ch); ctx.restore();
+                break;
+            case 'spinZoom':
+                ctx.translate(cw / 2, ch / 2); ctx.rotate((1 - t) * Math.PI); ctx.scale(t, t); ctx.translate(-cw / 2, -ch / 2);
+                drawImageContain(img, cw, ch);
+                break;
+            case 'bounce':
+                let bY = Math.abs(Math.sin(transitionTimer * 5) * (1 - t) * 120);
+                ctx.translate(0, -bY); drawImageContain(img, cw, ch);
+                break;
+            case 'scale':
+                ctx.translate(cw / 2, ch / 2); ctx.scale(t, t); ctx.translate(-cw / 2, -ch / 2);
+                drawImageContain(img, cw, ch);
+                break;
+            case 'windmill':
+                ctx.translate(cw / 2, ch / 2); ctx.rotate((1 - t) * Math.PI * 2); ctx.translate(-cw / 2, -ch / 2);
+                drawImageContain(img, cw, ch);
+                break;
+            case 'diagonal':
+                ctx.translate((1 - t) * -cw, (1 - t) * -ch); drawImageContain(img, cw, ch);
+                break;
+            case 'flash':
+                ctx.globalAlpha = (Math.sin(transitionTimer * 12) > 0 || t === 1) ? 1 : 0.2;
+                drawImageContain(img, cw, ch);
+                break;
+            case 'vBlinds':
+                let vStrips = 8, vH = ch / vStrips, pH = vH * t;
+                for (let i = 0; i < vStrips; i++) {
+                    ctx.save(); ctx.beginPath(); ctx.rect(0, i * vH, cw, pH); ctx.clip();
+                    drawImageContain(img, cw, ch); ctx.restore();
+                }
+                break;
+            case 'reveal':
+                let rW = cw * t, rH = ch * t;
+                ctx.save(); ctx.beginPath(); ctx.rect((cw - rW)/2, (ch - rH)/2, rW, rH); ctx.clip();
+                drawImageContain(img, cw, ch); ctx.restore();
+                break;
+            case 'rise':
+                ctx.translate(0, (1 - t) * ch); drawImageContain(img, cw, ch);
+                break;
+            case 'swing':
+                ctx.translate(cw / 2, 0); ctx.rotate(Math.sin(transitionTimer * 4) * (1 - t) * 0.2); ctx.translate(-cw / 2, 0);
+                drawImageContain(img, cw, ch);
+                break;
+            case 'dBlinds':
+                ctx.save(); ctx.beginPath(); ctx.rect(0, 0, cw * t, ch * t); ctx.clip();
+                drawImageContain(img, cw, ch); ctx.restore();
+                break;
+            default:
+                drawImageContain(img, cw, ch);
+        }
+        ctx.restore();
+    }
+
+    function render() {
+        ctx.fillStyle = "black";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        if (curIdx !== -1) {
+            const m = library[curIdx];
+            if (m.type === 'img' && m.el) {
+                renderImageWithAnimation(m.el, m.anim || 'zoom');
+            } else if (m.type === 'vid') {
+                ctx.drawImage(vBg, 0, 0, canvas.width, canvas.height);
+            }
+            
+            if(m.text) {
+                ctx.fillStyle = "yellow"; ctx.font = "bold 60px Impact"; ctx.textAlign = "center";
+                ctx.strokeStyle = "black"; ctx.lineWidth = 8;
+                ctx.strokeText(m.text.toUpperCase(), canvas.width/2, 650);
+                ctx.fillText(m.text.toUpperCase(), canvas.width/2, 650);
+            }
+        }
+
+        if (camMode !== 'off' && vCam.srcObject) {
+            camFxTimer += 0.05;
+            let cx = (camMode === 'full') ? 0 : camX;
+            let cy = (camMode === 'full') ? 0 : camY;
+            let cw = (camMode === 'full') ? canvas.width : camW;
+            let ch = (camMode === 'full') ? canvas.height : camH;
+
+            ctx.save();
+
+            if (camMode === 'mini' && camShape === 'circle') {
+                ctx.beginPath();
+                ctx.arc(cx + cw/2, cy + ch/2, Math.min(cw, ch)/2, 0, Math.PI * 2);
+                ctx.clip();
+            }
+
+            if (camFx === 'zoom' || camFx === 'punchIn') {
+                ctx.translate(cx + cw/2, cy + ch/2); ctx.scale(1.35, 1.35); ctx.translate(-(cx + cw/2), -(cy + ch/2));
+            } else if (camFx === 'punchOut') {
+                let pScale = 1.4 - (Math.min(camFxTimer, 1) * 0.4);
+                ctx.translate(cx + cw/2, cy + ch/2); ctx.scale(pScale, pScale); ctx.translate(-(cx + cw/2), -(cy + ch/2));
+            } else if (camFx === 'boom' || camFx === 'shakeEffect') {
+                cx += (Math.random() - 0.5) * 16; cy += (Math.random() - 0.5) * 16;
+            } else if (camFx === 'mirror') {
+                ctx.translate(cx + cw, cy); ctx.scale(-1, 1); cx = 0; cy = 0;
+            } else if (camFx === 'dollyZoom') {
+                let dScale = 1 + Math.sin(camFxTimer * 2) * 0.25;
+                ctx.translate(cx + cw/2, cy + ch/2); ctx.scale(dScale, dScale); ctx.translate(-(cx + cw/2), -(cy + ch/2));
+            } else if (camFx === 'forcedBlurRamp' || camFx === 'speedRamp') {
+                let ramp = 1 + Math.abs(Math.sin(camFxTimer * 6)) * 0.4;
+                ctx.translate(cx + cw/2, cy + ch/2); ctx.scale(ramp, ramp); ctx.translate(-(cx + cw/2), -(cy + ch/2));
+            }
+
+            if (camFx === 'freeze' || camFx === 'colorIsolation' || camFx === 'memeFreeze') {
+                ctx.filter = 'grayscale(1) contrast(1.4)';
+            } else if (camFx === 'vhs' || camFx === 'oldTv') {
+                ctx.filter = 'contrast(1.3) sepia(0.4)';
+            } else if (camFx === 'blurBg') {
+                ctx.filter = 'blur(5px)';
+            } else if (camFx === 'colorPop') {
+                ctx.filter = 'saturate(2.5) contrast(1.2)';
+            }
+
+            ctx.drawImage(procCanvas, cx, cy, cw, ch);
+            ctx.filter = 'none';
+
+            if (camFx === 'alert' || camFx === 'pulseRed') {
+                ctx.fillStyle = `rgba(255, 0, 0, ${Math.abs(Math.sin(camFxTimer * 3)) * 0.35})`; ctx.fillRect(cx, cy, cw, ch);
+            } else if (camFx === 'neon' || camFx === 'auraGlow') {
+                ctx.strokeStyle = `hsl(${(camFxTimer * 80) % 360}, 100%, 50%)`; ctx.lineWidth = 6; ctx.strokeRect(cx, cy, cw, ch);
+            } else if (camFx === 'cinema') {
+                ctx.fillStyle = 'black'; ctx.fillRect(cx, cy, cw, ch * 0.12); ctx.fillRect(cx, cy + ch - (ch * 0.12), cw, ch * 0.12);
+            } else if (camFx === 'strobe' || camFx === 'snapFlash') {
+                if (Math.sin(camFxTimer * 15) > 0) { ctx.fillStyle = 'rgba(255, 255, 255, 0.3)'; ctx.fillRect(cx, cy, cw, ch); }
+            } else if (camFx === 'laser') {
+                ctx.strokeStyle = 'red'; ctx.lineWidth = 6; ctx.shadowColor = 'red'; ctx.shadowBlur = 10; ctx.beginPath();
+                ctx.moveTo(cx + cw*0.35, cy + ch*0.4); ctx.lineTo(cx + cw*0.05, cy + ch*0.1);
+                ctx.moveTo(cx + cw*0.65, cy + ch*0.4); ctx.lineTo(cx + cw*0.95, cy + ch*0.1); ctx.stroke();
+            }
+
+            if (camMode === 'mini') {
+                ctx.strokeStyle = (camFx === 'boom') ? "#ff3333" : "#00ff00"; 
+                ctx.lineWidth = 3;
+                if (camShape === 'circle') {
+                    ctx.beginPath();
+                    ctx.arc(cx + cw/2, cy + ch/2, Math.min(cw, ch)/2, 0, Math.PI * 2);
+                    ctx.stroke();
+                } else {
+                    ctx.strokeRect(cx, cy, cw, ch);
+                }
+            }
+
+            ctx.restore();
+        }
+
+        drawThumbnailElements(ctx, canvas.width, canvas.height);
+
+        requestAnimationFrame(render);
+    }
+
+    async function startCapture() {
+        const btn = document.getElementById('recBtn');
+        
+        if (!isRecording) {
+            if (!audioCtx) audioCtx = new AudioContext();
+            if (audioCtx.state === 'suspended') await audioCtx.resume();
+
+            const micStream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
+            const canvasStream = canvas.captureStream(30);
+            const destination = audioCtx.createMediaStreamDestination();
+            audioCtx.createMediaStreamSource(micStream).connect(destination);
+
+            if (curIdx !== -1 && library[curIdx].type === 'vid') {
+                const vidSource = audioCtx.createMediaElementSource(vBg);
+                vidSource.connect(destination);
+                vidSource.connect(audioCtx.destination);
+            }
+
+            const combined = new MediaStream([...canvasStream.getVideoTracks(), ...destination.stream.getAudioTracks()]);
+            recorder = new MediaRecorder(combined, { mimeType: 'video/webm;codecs=vp9' });
+            chunks = [];
+            recorder.ondataavailable = e => chunks.push(e.data);
+            recorder.onstop = () => {
+                finalBlob = new Blob(chunks, { type: 'video/webm' });
+                document.getElementById('dlBtn').style.display = "block";
+            };
+            
+            recorder.start(); 
+            isRecording = true;
+            btn.innerText = "⏹ TERMINAR";
+            btn.classList.add('recording');
+        } else {
+            recorder.stop();
+            isRecording = false;
+            btn.innerText = "🎙️ EMPEZAR GRABACIÓN";
+            btn.classList.remove('recording');
+        }
+    }
+
+    function togglePause() {
+        const pBtn = document.getElementById('pauseBtn');
+        if (!isRecording) return;
+        
+        if (!isPaused) {
+            recorder.pause();
+            isPaused = true;
+            pBtn.innerText = "▶ REANUDAR";
+        } else {
+            recorder.resume();
+            isPaused = false;
+            pBtn.innerText = "⏸ PAUSAR (CORTAR)";
+        }
+    }
+
+    function download() {
+        const a = document.createElement('a'); a.href = URL.createObjectURL(finalBlob);
+        a.download = `CAPACITIUMX_FINAL.webm`; a.click();
+    }
+
+    window.addEventListener('keydown', (e) => {
+        if (e.code === 'Space' && isRecording) {
+            e.preventDefault();
+            togglePause();
+        }
+    });
+
+    canvas.onmousedown = (e) => {
+        const r = canvas.getBoundingClientRect();
+        const x = (e.clientX - r.left) * (canvas.width / r.width);
+        const y = (e.clientY - r.top) * (canvas.height / r.height);
+        if(camMode === 'mini' && x > camX && x < camX + camW && y > camY && y < camY + camH) dragging = true;
+    };
+    window.onmousemove = (e) => {
+        if(dragging) {
+            const r = canvas.getBoundingClientRect();
+            camX = (e.clientX - r.left) * (canvas.width / r.width) - camW/2;
+            camY = (e.clientY - r.top) * (canvas.height / r.height) - camH/2;
+        }
+    };
+    window.onmouseup = () => dragging = false;
+
+    initAI();
+    render();
+</script>
+</body>
+</html>
