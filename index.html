@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>CAPACITIUMX V347 - ULTIMATE CREATOR STUDIO PRO</title>
+    <title>CAPACITIUMX V348 - ULTIMATE CREATOR STUDIO PRO</title>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation"></script>
     <style>
         :root { --neon: #00ff00; --dark: #050505; --red: #ff3333; --blue-pro: #00e5ff; }
@@ -56,16 +56,16 @@
 <body>
 
 <div id="thumb-modal">
-    <h2 style="color:var(--neon); margin-bottom: 2px;">🤖 ELIGE TU MINIATURA IA (10 OPCIONES COMPLETAMENTE LIMPIAS)</h2>
+    <h2 style="color:var(--neon); margin-bottom: 2px;">🤖 OPCIONES DE MINIATURA (COMPLETA Y TOTALMENTE LIMPIAS)</h2>
     <p style="font-size: 11px; color: #ccc;">Haz clic en cualquier opción para descargarla en formato PNG:</p>
     <div class="thumb-grid-10">
         <div class="thumb-option" onclick="downloadAutoThumb(1)"><canvas id="thumb-c1"></canvas><div class="thumb-label">1. Portada Limpia Original</div></div>
-        <div class="thumb-option" onclick="downloadAutoThumb(2)"><canvas id="thumb-c2"></canvas><div class="thumb-label">2. Estilo MrBeast Pro Outlines</div></div>
-        <div class="thumb-option" onclick="downloadAutoThumb(3)"><canvas id="thumb-c3"></canvas><div class="thumb-label">3. Inclinación + Flecha 3D</div></div>
+        <div class="thumb-option" onclick="downloadAutoThumb(2)"><canvas id="thumb-c2"></canvas><div class="thumb-label">2. Estilo Outlines Pro</div></div>
+        <div class="thumb-option" onclick="downloadAutoThumb(3)"><canvas id="thumb-c3"></canvas><div class="thumb-label">3. Enfoque Reacción + Flecha 3D</div></div>
         <div class="thumb-option" onclick="downloadAutoThumb(4)"><canvas id="thumb-c4"></canvas><div class="thumb-label">4. Viñeta Cine Oscura</div></div>
-        <div class="thumb-option" onclick="downloadAutoThumb(5)"><canvas id="thumb-c5"></canvas><div class="thumb-label">5. Cyberpunk Neon Grade</div></div>
+        <div class="thumb-option" onclick="downloadAutoThumb(5)"><canvas id="thumb-c5"></canvas><div class="thumb-label">5. Neon Contrast Grade</div></div>
         <div class="thumb-option" onclick="downloadAutoThumb(6)"><canvas id="thumb-c6"></canvas><div class="thumb-label">6. Enfoque Radial Zoom</div></div>
-        <div class="thumb-option" onclick="downloadAutoThumb(7)"><canvas id="thumb-c7"></canvas><div class="thumb-label">7. Láser Rage Mode</div></div>
+        <div class="thumb-option" onclick="downloadAutoThumb(7)"><canvas id="thumb-c7"></canvas><div class="thumb-label">7. Láser Impact Mode</div></div>
         <div class="thumb-option" onclick="downloadAutoThumb(8)"><canvas id="thumb-c8"></canvas><div class="thumb-label">8. Matrix Code Digital Overlay</div></div>
         <div class="thumb-option" onclick="downloadAutoThumb(9)"><canvas id="thumb-c9"></canvas><div class="thumb-label">9. Drama B&N Contrast</div></div>
         <div class="thumb-option" onclick="downloadAutoThumb(10)"><canvas id="thumb-c10"></canvas><div class="thumb-label">10. Ultra Matte Gold Border</div></div>
@@ -74,13 +74,12 @@
 </div>
 
 <header>
-    <div class="logo">CAPACITIUMX V347 - ULTIMATE CREATOR STUDIO</div>
+    <div class="logo">CAPACITIUMX V348 - ULTIMATE CREATOR STUDIO</div>
     <div id="status-mic" style="color:yellow; font-size: 12px;">ESTADO: CARGANDO IA...</div>
 </header>
 
 <div class="main">
     <aside class="sidebar">
-        <!-- ENTORNO INTEGRADO DE SUITE DE APLICACIONES PRO -->
         <div class="section-title">🖥️ ENTORNO PRO CREATOR STUDIO APPLICATIONS</div>
         <div class="grid-pro-apps">
             <button class="btn-pro-app" onclick="selectProEngine('fcp')">Final Cut</button>
@@ -117,7 +116,7 @@
 
         <div class="section-title">🖼️ ESTUDIO Y GENERADOR DE MINIATURAS</div>
         <button class="btn-load" style="background:#00ffff; color:black; font-weight:900;" onclick="generateAutoThumbnails()">✨ GENERAR 10 OPCIONES AUTO (IA)</button>
-        <input type="text" id="thumb-text" class="input-text" style="margin-top:4px;" placeholder="Escribe tu título aquí personalizado...">
+        <input type="text" id="thumb-text" class="input-text" style="margin-top:4px;" placeholder="Título manual (si no escribes nada, se genera limpia)...">
         
         <div class="ctrl-row">
             <span>Color Texto:</span>
@@ -322,6 +321,13 @@
     </aside>
 
     <main class="monitor-area">
+        <div class="console">
+            <span style="font-size: 9px; color: var(--neon); text-align: center;">MODO CÁMARA</span>
+            <button class="btn-c" onclick="camMode='full'">👤 YO GRANDE</button>
+            <button class="btn-c" onclick="camMode='mini'">🖼️ YO CHICO</button>
+            <button class="btn-c" onclick="camMode='off'">🚫 OCULTARME</button>
+            <button class="btn-c" id="playBtn" style="margin-top:5px;" onclick="togglePlay()">▶ PLAY FONDO</button>
+        </div>
         <canvas id="canvas-render" width="1280" height="720"></canvas>
     </main>
 </div>
@@ -372,9 +378,7 @@
     function toggleArrow(val) { showArrow = val; }
     function toggleArrowFlip() { arrowFlip = !arrowFlip; }
 
-    // --- ACCIÓN DE LA ENTRADA DE MOTOR DE APLICACIONES PRO ---
     function selectProEngine(app) {
-        console.log("Suite Engine Activado para:", app);
         switch(app) {
             case 'fcp': setCamFx('cinema'); bgMode = 'dark'; break;
             case 'logic': setCamFx('soundDuck'); break;
@@ -382,7 +386,7 @@
             case 'mainstage': setCamFx('strobe'); break;
             case 'motion': setCamFx('kineticText'); break;
             case 'compressor': setCamFx('speedRamp'); break;
-            case 'pages': document.getElementById('thumb-text').value = "Pages Pro Document"; break;
+            case 'pages': document.getElementById('thumb-text').value = ""; break;
             case 'freeform': showArrow = true; document.getElementById('arrow-color').value = "#00ffff"; break;
             case 'numbers': bgMode = 'green'; break;
         }
@@ -607,7 +611,7 @@
         requestAnimationFrame(processAIFrames);
     }
 
-    // ARQUITECTURA DE RECORTE COMPUESTO BINARIO ROBUSTO MEJORADO (0 MANCHAS)
+    // ARQUITECTURA DE RECORTE COMPUESTO BINARIO ROBUSTO MEJORADO (0 BORDES FANTASMA)
     function onResultsAI(results) {
         latestMask = results.segmentationMask;
 
@@ -887,7 +891,7 @@
         switch(animMode) {
             case 'zoom':
                 let sz = 1 + (Math.sin(transitionTimer * 0.5) * 0.08);
-                ctx.translate(cw / 2, ch / 2); ctx.scale(sz, sz); ctx.translate(-cw / 2, -ch / 2);
+                ctx.translate(cw / 2, ch / 2); ctx.scale(sz, sz); ctx.translate(-cw / 2, -sc / 2);
                 drawImageContain(img, cw, ch);
                 break;
             case 'slide':
@@ -1072,6 +1076,7 @@
         requestAnimationFrame(render);
     }
 
+    // ACTUALIZACIÓN DE MOTOR DE AUDIO MONO DE ALTA DEFINICIÓN (SIN ECO NI RUIDO AMBIENTE)
     async function startCapture() {
         const btn = document.getElementById('recBtn');
         
@@ -1079,7 +1084,15 @@
             if (!audioCtx) audioCtx = new AudioContext();
             if (audioCtx.state === 'suspended') await audioCtx.resume();
 
-            const micStream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
+            // Configuración optimizada de audio: Forzado a Mono, Cancelación de Eco, Reducción de Ruido y Control Automático de Ganancia
+            const micStream = await navigator.mediaDevices.getUserMedia({ 
+                audio: { 
+                    channelCount: 1, // Forzado a canal MONO puro para nitidez de voz
+                    echoCancellation: true, 
+                    noiseSuppression: true,
+                    autoGainControl: true
+                } 
+            });
             const canvasStream = canvas.captureStream(30);
             const destination = audioCtx.createMediaStreamDestination();
             audioCtx.createMediaStreamSource(micStream).connect(destination);
@@ -1103,6 +1116,7 @@
             isRecording = true;
             btn.innerText = "⏹ TERMINAR";
             btn.classList.add('recording');
+            document.getElementById('status-mic').innerText = "🔴 GRABANDO MONO NITIDO...";
         } else {
             recorder.stop();
             isRecording = false;
@@ -1119,10 +1133,12 @@
             recorder.pause();
             isPaused = true;
             pBtn.innerText = "▶ REANUDAR";
+            document.getElementById('status-mic').innerText = "⏸ PAUSADO (CORTA AQUÍ)";
         } else {
             recorder.resume();
             isPaused = false;
             pBtn.innerText = "⏸ PAUSAR (CORTAR)";
+            document.getElementById('status-mic').innerText = "🔴 GRABANDO...";
         }
     }
 
